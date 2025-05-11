@@ -70,7 +70,7 @@ public class ControlPersonaje : MonoBehaviour
 
         muerte = hit2.collider != null;
            
-        animator.SetBool("Daño", muerte);
+        animator.SetBool("DaÃ±o", muerte);
 
 
 
