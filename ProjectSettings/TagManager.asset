@@ -8,12 +8,12 @@ TagManager:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Suelo
   - Water
   - UI
-  - 
-  - 
-  - 
+  - Enemigo
+  - Pared
+  - Techo
   - 
   - 
   - 
