@@ -18,7 +18,7 @@ public class ControlPersonaje : MonoBehaviour
     private bool enTecho = false;
 
     public LayerMask capaPared;
-    
+
     public float fuerzaAdhesion = 5f;
     Vector2 direccionSuperficie = Vector2.down;
 
@@ -36,7 +36,7 @@ public class ControlPersonaje : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+
         float velocidadX = Input.GetAxis("Horizontal") * Time.deltaTime * velocidad;
 
         animator.SetFloat("Movimiento", velocidadX * velocidad);
@@ -56,7 +56,8 @@ public class ControlPersonaje : MonoBehaviour
 
         transform.position = new Vector3(velocidadX + posicion.x, posicion.y, posicion.z);
 
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, longitud, capaSuelo);
+        float escalaRaycast = escalaBase;
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, longitud * escalaRaycast, capaSuelo);
         enSuelo = hit.collider != null;
 
         if (enSuelo && Input.GetKeyDown(KeyCode.Space))
@@ -69,7 +70,7 @@ public class ControlPersonaje : MonoBehaviour
         RaycastHit2D hit2 = Physics2D.Raycast(transform.position, Vector2.down, longitud, Enemigo);
 
         muerte = hit2.collider != null;
-           
+
         animator.SetBool("Daño", muerte);
 
 
@@ -120,7 +121,7 @@ public class ControlPersonaje : MonoBehaviour
 
                 // Opcional: mantener al personaje pegado a la pared
                 rb.velocity = new Vector2(rb.velocity.x, 0);
-             }
+            }
 
             else if (!enPared)
             {
@@ -141,6 +142,11 @@ public class ControlPersonaje : MonoBehaviour
     public void HacersePequeno(Vector3 nuevaEscala)
     {
         escalaBase = nuevaEscala.x; // suponiendo que x = y
+    }
+    public void HacerseGrande(Vector3 nuevaEscala)
+    {
+        escalaBase = nuevaEscala.x;
+        //transform.localScale = new Vector3(direccion * escalaBase, escalaBase, 1f);
     }
 
     void OnDrawGizmos()
