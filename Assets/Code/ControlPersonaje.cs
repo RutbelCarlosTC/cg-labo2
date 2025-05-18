@@ -18,6 +18,7 @@ public class ControlPersonaje : MonoBehaviour
     private bool enTecho = false;
 
     public LayerMask capaPared;
+    public LayerMask capaTecho;
 
     public float fuerzaAdhesion = 5f;
     Vector2 direccionSuperficie = Vector2.down;
@@ -26,7 +27,7 @@ public class ControlPersonaje : MonoBehaviour
     private float direccion = 1f;
 
     private bool enSuelo;
-    private bool muerte;
+    private bool muerte = false;
     private Rigidbody2D rb;
     void Start()
     {
@@ -37,24 +38,28 @@ public class ControlPersonaje : MonoBehaviour
     void Update()
     {
 
-        float velocidadX = Input.GetAxis("Horizontal") * Time.deltaTime * velocidad;
-
-        animator.SetFloat("Movimiento", velocidadX * velocidad);
-
-        if (velocidadX < 0)
+        if (!muerte)
         {
-            direccion = -1f;
+            float velocidadX = Input.GetAxis("Horizontal") * Time.deltaTime * velocidad;
+
+            animator.SetFloat("Movimiento", velocidadX * velocidad);
+
+            if (velocidadX < 0)
+            {
+                direccion = -1f;
+            }
+            else if (velocidadX > 0)
+            {
+                direccion = 1f;
+            }
+
+            transform.localScale = new Vector3(direccion * escalaBase, escalaBase, 1f);
+
+            Vector3 posicion = transform.position;
+
+            transform.position = new Vector3(velocidadX + posicion.x, posicion.y, posicion.z);
+
         }
-        else if (velocidadX > 0)
-        {
-            direccion = 1f;
-        }
-
-        transform.localScale = new Vector3(direccion * escalaBase, escalaBase, 1f);
-
-        Vector3 posicion = transform.position;
-
-        transform.position = new Vector3(velocidadX + posicion.x, posicion.y, posicion.z);
 
         float escalaRaycast = escalaBase;
         RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, longitud * escalaRaycast, capaSuelo);
@@ -79,18 +84,25 @@ public class ControlPersonaje : MonoBehaviour
         {
             RaycastHit2D paredIzq = Physics2D.Raycast(transform.position, Vector2.left, longitud, capaPared);
             RaycastHit2D paredDer = Physics2D.Raycast(transform.position, Vector2.right, longitud, capaPared);
+            RaycastHit2D techo = Physics2D.Raycast(transform.position, Vector2.up, longitud, capaTecho);
 
             enPared = paredIzq.collider != null || paredDer.collider != null;
+            enTecho = techo.collider != null;
 
-            if (paredIzq.collider != null)
+            if (paredIzq.collider != null && techo.collider == null)
             {
                 enPared = true;
                 direccionSuperficie = Vector2.left;
             }
-            else if (paredDer.collider != null)
+            else if (paredDer.collider != null && techo.collider == null)
             {
                 enPared = true;
                 direccionSuperficie = Vector2.right;
+            }
+            else if (techo.collider != null)
+            {
+                enTecho = true;
+                direccionSuperficie = Vector2.up;
             }
             else
             {
@@ -110,6 +122,10 @@ public class ControlPersonaje : MonoBehaviour
             {
                 transform.rotation = Quaternion.Euler(0, 0, 90);
             }
+            else if (direccionSuperficie == Vector2.up ) // pared derecha
+            {
+                transform.rotation = Quaternion.Euler(0, 0, 180);
+            }
 
             if (enPared)
             {
@@ -122,8 +138,18 @@ public class ControlPersonaje : MonoBehaviour
                 // Opcional: mantener al personaje pegado a la pared
                 rb.velocity = new Vector2(rb.velocity.x, 0);
             }
+            
+            if (enTecho)
+            {
+                rb.gravityScale = 0f;
+                // Movimiento vertical en la pared
+                float horizontal2 = Input.GetAxis("Vertical") * Time.deltaTime * velocidad;
+                transform.position += new Vector3(-horizontal2, 0, 0);
 
-            else if (!enPared)
+                rb.velocity = new Vector2(0, rb.velocity.y);
+            }
+            
+            else if (!enPared && !enTecho)
             {
                 rb.gravityScale = 1f;
             }
